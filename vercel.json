@@ -1,7 +1,5 @@
 {
-  "functions": {
-    "Api/analyze.js": {
-      "runtime": "node"
-    }
-  }
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" }
+  ]
 }
