@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>TypeMe — ¿Sabes por qué eres como eres?</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Syne+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #07070f;
+  --surface: #0f0f1a;
+  --border: #1a1a2e;
+  --text: #f0eeff;
+  --muted: #5a5880;
+  --pink: #ff4d8d;
+  --purple: #7c3aed;
+  --cyan: #00d4ff;
+  --gold: #ffb800;
+  --green: #00e5a0;
+  --grad: linear-gradient(135deg, #ff4d8d, #7c3aed, #00d4ff);
+}
+
+/* FIX: was "- {" which matched nothing */
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  /* Prevent iOS bounce while keeping scroll */
+  -webkit-overflow-scrolling: touch;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 15% 15%, rgba(124,58,237,0.13) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 85% 85%, rgba(255,77,141,0.1) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 60% at 55% 45%, rgba(0,212,255,0.05) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app {
+  position: relative;
+  z-index: 1;
+  max-width: 580px;
+  margin: 0 auto;
+  padding: 0 18px 80px;
+  min-height: 100vh;
+}
+
+/* LANG BAR */
+.lang-bar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 14px 0 0;
+  gap: 4px;
+}
+.lang-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: 'Syne Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  padding: 5px 12px;
+  cursor: pointer;
+  border-radius: 100px;
+  transition: all 0.2s;
+  /* Mobile: ensure tap target */
+  min-height: 36px;
+}
+.lang-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+/* HERO */
+.hero {
+  text-align: center;
+  padding: 36px 0 40px;
+  animation: fadeUp 0.6s ease both;
+}
+
+.logo-mark {
+  font-size: 12px;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 800;
+  margin-bottom: 24px;
+}
+
+.hero h1 {
+  font-size: clamp(34px, 9vw, 62px);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin-bottom: 14px;
+}
+
+.hero h1 .grad-text {
+  background: var(--grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-sub {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.65;
+  margin-bottom: 32px;
+  max-width: 380px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-stats {
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  margin-bottom: 36px;
+}
+
+.stat { text-align: center; }
+.stat-n {
+  font-size: 24px;
+  font-weight: 800;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.stat-l {
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-family: 'Syne Mono', monospace;
+}
+
+.cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--grad);
+  color: white;
+  border: none;
+  font-family: 'Syne', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 18px 40px;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: all 0.25s;
+  box-shadow: 0 0 50px rgba(124,58,237,0.35);
+  letter-spacing: 0.02em;
+  /* Mobile: ensure big tap target */
+  min-height: 56px;
+  touch-action: manipulation;
+}
+.cta-btn:hover { transform: translateY(-2px); box-shadow: 0 0 70px rgba(124,58,237,0.5); }
+.cta-arrow { transition: transform 0.2s; }
+.cta-btn:hover .cta-arrow { transform: translateX(5px); }
+
+/* TYPE GRID */
+.type-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 7px;
+  margin-top: 44px;
+}
+
+@media (max-width: 360px) {
+  .type-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.type-chip {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 13px 6px;
+  text-align: center;
+  transition: all 0.2s;
+}
+.type-chip:hover { border-color: rgba(124,58,237,0.4); transform: translateY(-2px); }
+.type-chip-code {
+  font-size: 15px;
+  font-weight: 800;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 3px;
+}
+.type-chip-name { font-size: 8px; color: var(--muted); font-family: 'Syne Mono', monospace; }
+
+/* PROGRESS */
+.progress-wrap { padding: 28px 0 20px; }
+.progress-top {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.prog-label { font-family: 'Syne Mono', monospace; font-size: 11px; color: var(--muted); }
+.prog-pct {
+  font-family: 'Syne Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.progress-track { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.progress-fill {
+  height: 100%;
+  background: var(--grad);
+  border-radius: 2px;
+  transition: width 0.5s cubic-bezier(.4,0,.2,1);
+}
+
+/* QUESTION CARD */
+.q-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 28px 24px;
+  animation: fadeUp 0.3s ease both;
+  position: relative;
+  overflow: hidden;
+}
+
+@media (max-width: 400px) {
+  .q-card { padding: 22px 18px; border-radius: 20px; }
+}
+
+.q-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--grad);
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.q-cat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(124,58,237,0.1);
+  border: 1px solid rgba(124,58,237,0.2);
+  border-radius: 100px;
+  padding: 4px 12px;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #a78bfa;
+  font-family: 'Syne Mono', monospace;
+  margin-bottom: 18px;
+}
+
+.q-text {
+  font-size: clamp(16px, 4.2vw, 21px);
+  font-weight: 700;
+  line-height: 1.4;
+  margin-bottom: 26px;
+  letter-spacing: -0.01em;
+}
+
+/* CHOICE OPTIONS */
+.choices { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+
+.choice {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(255,255,255,0.025);
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  /* Mobile: minimum tap target height */
+  padding: 18px 18px;
+  min-height: 64px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  font-family: 'Syne', sans-serif;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  line-height: 1.4;
+  width: 100%;
+  touch-action: manipulation;
+}
+.choice:active { transform: scale(0.99); }
+.choice:hover { border-color: rgba(124,58,237,0.5); background: rgba(124,58,237,0.07); transform: translateX(3px); }
+.choice.selected { border-color: var(--purple); background: rgba(124,58,237,0.14); }
+
+.choice-emoji { font-size: 22px; flex-shrink: 0; width: 30px; text-align: center; }
+
+.choice-check {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  margin-left: auto;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.18s;
+  font-size: 11px;
+}
+.choice.selected .choice-check {
+  background: var(--purple);
+  border-color: var(--purple);
+  color: white;
+}
+
+/* SEGMENTATION CARD */
+.seg-card {
+  background: var(--surface);
+  border: 1px solid rgba(255,184,0,0.2);
+  border-radius: 24px;
+  padding: 28px 24px;
+  animation: fadeUp 0.3s ease both;
+  position: relative;
+  overflow: hidden;
+}
+.seg-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold), var(--pink));
+}
+
+/* NAV */
+.q-nav { display: flex; gap: 10px; }
+.btn-back {
+  background: transparent;
+  border: 1.5px solid var(--border);
+  color: var(--muted);
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 14px 18px;
+  min-height: 52px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.18s;
+  touch-action: manipulation;
+}
+.btn-back:hover { border-color: var(--text); color: var(--text); }
+
+.btn-next {
+  flex: 1;
+  background: var(--grad);
+  border: none;
+  color: white;
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 14px 20px;
+  min-height: 52px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.18s;
+  touch-action: manipulation;
+}
+.btn-next:hover { opacity: 0.9; transform: translateY(-1px); }
+.btn-next:disabled { opacity: 0.25; cursor: not-allowed; transform: none; }
+
+/* LOADING */
+.loading-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 65vh;
+  text-align: center;
+  animation: fadeUp 0.4s ease both;
+  gap: 0;
+}
+.loading-orb {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: var(--grad);
+  margin-bottom: 24px;
+  animation: orb 1.6s ease-in-out infinite;
+  box-shadow: 0 0 60px rgba(124,58,237,0.5);
+}
+@keyframes orb {
+  0%,100% { transform: scale(1); }
+  50% { transform: scale(1.12); opacity: 0.85; }
+}
+.loading-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+.loading-sub { font-size: 12px; color: var(--muted); font-family: 'Syne Mono', monospace; }
+
+/* RESULT */
+.result-screen { animation: fadeUp 0.5s ease both; padding-top: 28px; }
+
+.result-hero {
+  text-align: center;
+  margin-bottom: 28px;
+  position: relative;
+  padding: 32px 0;
+}
+.result-glow {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  width: 220px; height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(124,58,237,0.28), transparent 70%);
+  pointer-events: none;
+}
+.result-type {
+  font-size: clamp(60px, 16vw, 90px);
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+  position: relative;
+}
+.result-name { font-size: clamp(20px, 5vw, 26px); font-weight: 700; margin-top: 8px; }
+.result-phrase {
+  font-size: 14px;
+  color: #a09cc0;
+  margin-top: 10px;
+  line-height: 1.6;
+  font-style: italic;
+  max-width: 380px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* AXES */
+.axes { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-bottom: 18px; }
+.axis-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+}
+.axis-top { display: flex; justify-content: space-between; margin-bottom: 8px; }
+.axis-p { font-size: 10px; font-family: 'Syne Mono', monospace; letter-spacing: 0.08em; }
+.axis-p.on { color: var(--text); font-weight: 700; }
+.axis-p.off { color: var(--muted); }
+.axis-track { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.axis-fill { height: 100%; border-radius: 3px; transition: width 1.2s cubic-bezier(.4,0,.2,1) 0.4s; }
+
+/* ANALYSIS */
+.analysis-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 26px;
+  margin-bottom: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.analysis-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--grad);
+}
+.section-label {
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-family: 'Syne Mono', monospace;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.analysis-text { font-size: 14px; line-height: 1.78; color: #bbb8d8; }
+.analysis-text p { margin-bottom: 12px; }
+.analysis-text p:last-child { margin-bottom: 0; }
+
+/* PREMIUM */
+.premium-card {
+  border-radius: 20px;
+  padding: 26px;
+  margin-bottom: 14px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(124,58,237,0.3);
+}
+.premium-card.solo    { background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(124,58,237,0.12)); border-color: rgba(0,212,255,0.25); }
+.premium-card.search  { background: linear-gradient(135deg, rgba(255,77,141,0.1), rgba(124,58,237,0.12)); border-color: rgba(255,77,141,0.3); }
+.premium-card.couple  { background: linear-gradient(135deg, rgba(255,184,0,0.08), rgba(255,77,141,0.1));  border-color: rgba(255,184,0,0.25); }
+.premium-card.healing { background: linear-gradient(135deg, rgba(0,229,160,0.08), rgba(124,58,237,0.1)); border-color: rgba(0,229,160,0.25); }
+
+.premium-badge {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 100px;
+  margin-bottom: 14px;
+  font-family: 'Syne Mono', monospace;
+}
+.solo    .premium-badge { background: rgba(0,212,255,0.15);  color: var(--cyan); }
+.search  .premium-badge { background: rgba(255,77,141,0.15); color: var(--pink); }
+.couple  .premium-badge { background: rgba(255,184,0,0.15);  color: var(--gold); }
+.healing .premium-badge { background: rgba(0,229,160,0.15);  color: var(--green); }
+
+.premium-title { font-size: 18px; font-weight: 700; margin-bottom: 7px; }
+.premium-desc { font-size: 13px; color: #9994b8; line-height: 1.6; margin-bottom: 18px; }
+
+.premium-feats { display: flex; flex-direction: column; gap: 7px; margin-bottom: 20px; }
+.premium-feat {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 13px; color: #ccc8e8;
+}
+.feat-icon {
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; flex-shrink: 0;
+  background: rgba(124,58,237,0.2);
+}
+
+.premium-btn {
+  width: 100%;
+  border: none;
+  color: white;
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 17px;
+  min-height: 54px;
+  border-radius: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.02em;
+  touch-action: manipulation;
+}
+.solo    .premium-btn { background: linear-gradient(135deg, var(--cyan), var(--purple)); box-shadow: 0 0 30px rgba(0,212,255,0.25); }
+.search  .premium-btn { background: linear-gradient(135deg, var(--pink), var(--purple)); box-shadow: 0 0 30px rgba(255,77,141,0.25); }
+.couple  .premium-btn { background: linear-gradient(135deg, var(--gold), var(--pink));   box-shadow: 0 0 30px rgba(255,184,0,0.25); }
+.healing .premium-btn { background: linear-gradient(135deg, var(--green), var(--purple));box-shadow: 0 0 30px rgba(0,229,160,0.25); }
+.premium-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+
+.premium-price { font-size: 11px; color: var(--muted); margin-top: 8px; text-align: center; font-family: 'Syne Mono', monospace; }
+
+/* SHARE */
+.share-row { display: flex; gap: 9px; margin-bottom: 10px; }
+.share-btn {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 14px;
+  min-height: 52px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.18s;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  touch-action: manipulation;
+}
+.share-btn:hover { border-color: rgba(124,58,237,0.5); background: rgba(124,58,237,0.08); }
+
+.restart-btn {
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: 'Syne', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 14px;
+  min-height: 52px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.18s;
+  letter-spacing: 0.05em;
+  touch-action: manipulation;
+}
+.restart-btn:hover { border-color: var(--text); color: var(--text); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="lang-bar">
+    <button class="lang-btn active" id="btn-es" onclick="setLang('es')">ES</button>
+    <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+  </div>
+  <div id="root"></div>
+</div>
+
+<script>
+const TYPES = {
+  INTJ:{name_es:'El Arquitecto',   name_en:'The Architect',   phrase_es:'Ves patrones donde otros ven caos.',                        phrase_en:'You see patterns where others see chaos.'},
+  INTP:{name_es:'El Pensador',     name_en:'The Thinker',     phrase_es:'Tu mente nunca deja de hacer preguntas.',                   phrase_en:'Your mind never stops asking questions.'},
+  ENTJ:{name_es:'El Comandante',   name_en:'The Commander',   phrase_es:'Naciste para liderar, aunque no siempre lo busques.',       phrase_en:'You were born to lead, even when you don\'t seek it.'},
+  ENTP:{name_es:'El Innovador',    name_en:'The Debater',     phrase_es:'El statu quo te aburre. Siempre hay una forma mejor.',      phrase_en:'The status quo bores you. There\'s always a better way.'},
+  INFJ:{name_es:'El Consejero',    name_en:'The Advocate',    phrase_es:'Sientes a los demás más profundo de lo que ellos creen.',   phrase_en:'You feel others more deeply than they realize.'},
+  INFP:{name_es:'El Mediador',     name_en:'The Mediator',    phrase_es:'Tu mundo interior es más rico de lo que muestras.',         phrase_en:'Your inner world is richer than what you show.'},
+  ENFJ:{name_es:'El Protagonista', name_en:'The Protagonist', phrase_es:'Las personas crecen cuando están cerca de ti.',             phrase_en:'People grow when they\'re around you.'},
+  ENFP:{name_es:'El Activista',    name_en:'The Campaigner',  phrase_es:'Ves el potencial en todo y en todos.',                      phrase_en:'You see potential in everything and everyone.'},
+  ISTJ:{name_es:'El Inspector',    name_en:'The Logistician', phrase_es:'Tu palabra vale más que cualquier contrato.',               phrase_en:'Your word is worth more than any contract.'},
+  ISFJ:{name_es:'El Protector',    name_en:'The Defender',    phrase_es:'Cuidas a los demás antes de pedirte que te cuiden a ti.',   phrase_en:'You care for others before asking to be cared for.'},
+  ESTJ:{name_es:'El Ejecutivo',    name_en:'The Executive',   phrase_es:'Donde hay desorden, tú ves un sistema esperando nacer.',    phrase_en:'Where there\'s chaos, you see a system waiting to emerge.'},
+  ESFJ:{name_es:'El Cónsul',       name_en:'The Consul',      phrase_es:'Recuerdas lo que importa a cada persona que conoces.',      phrase_en:'You remember what matters to every person you meet.'},
+  ISTP:{name_es:'El Virtuoso',     name_en:'The Virtuoso',    phrase_es:'Entiendes el mundo tocándolo, no leyendo sobre él.',        phrase_en:'You understand the world by touching it, not reading about it.'},
+  ISFP:{name_es:'El Artista',      name_en:'The Adventurer',  phrase_es:'Vives más intensamente de lo que dejas ver.',               phrase_en:'You live more intensely than you let on.'},
+  ESTP:{name_es:'El Emprendedor',  name_en:'The Entrepreneur',phrase_es:'Piensas más rápido de lo que otros hablan.',                phrase_en:'You think faster than others talk.'},
+  ESFP:{name_es:'El Animador',     name_en:'The Entertainer', phrase_es:'Haces que la gente se sienta viva cuando está contigo.',    phrase_en:'You make people feel alive when they\'re around you.'},
+};
+
+const AXIS_GRAD = {
+  EI:'linear-gradient(90deg,#ff4d8d,#ff8cb8)',
+  SN:'linear-gradient(90deg,#7c3aed,#a78bfa)',
+  TF:'linear-gradient(90deg,#00d4ff,#67e8f9)',
+  JP:'linear-gradient(90deg,#ffb800,#fcd34d)',
+};
+
+const T = {
+  es: {
+    logo:'TypeMe ✦',
+    h1a:'¿Sabes por qué',
+    h1b:'eres como eres?',
+    sub:'Descubre tu tipo de personalidad en 3 minutos. Análisis con inteligencia artificial.',
+    statsQ:'Preguntas', statsD:'Dimensiones', statsT:'Tipos',
+    startBtn:'Descubrirlo ahora',
+    progLabel:'Pregunta', of:'de',
+    back:'← Atrás', next:'Siguiente →', finish:'Ver mi resultado ✦',
+    loadTitle:'Analizando tu perfil…',
+    loadSub:'La IA está preparando tu análisis personal',
+    analysisLabel:'Tu análisis',
+    shareLabel:'Compartir resultado',
+    shareCopy:'📋 Copiar', shareTT:'🎵 TikTok',
+    restart:'↺ Repetir el test',
+    segTitle:'Una pregunta personal',
+    segSub:'Esto hace tu resultado más preciso',
+    segQ:'¿Cómo describes tu situación sentimental ahora mismo?',
+    segOpts:[
+      { emoji:'😎', text:'Soltero/a y bien así', val:'solo' },
+      { emoji:'🔍', text:'Soltero/a y buscando a alguien', val:'search' },
+      { emoji:'💑', text:'En una relación', val:'couple' },
+      { emoji:'💔', text:'Saliendo de una relación', val:'healing' },
+    ],
+    premium: {
+      solo: {
+        badge:'Para ti · Independiente',
+        title:'Tu guía de autoconocimiento',
+        desc:'Eres tu propia prioridad. Este informe te ayuda a entenderte más profundo y a atraer a las personas correctas cuando estés listo/a.',
+        feats:['Mapa completo de tu personalidad','Tus patrones en relaciones pasadas','Qué tipo de persona te complementa','Rutinas que potencian tu tipo'],
+        btn:'Quiero conocerme más', price:'Solo $4.99 USD — pago único',
+      },
+      search: {
+        badge:'Para ti · Buscando conexión',
+        title:'¿Por qué atraes a ciertas personas?',
+        desc:'Tu tipo de personalidad predice los patrones que repites en el amor. Descubre qué tipo de persona te complementa de verdad.',
+        feats:['Los 3 tipos más compatibles contigo','Por qué te atraen personas difíciles','Cómo comunicarte para conectar más','Señales de alerta según tu tipo'],
+        btn:'Descubrir mi compatibilidad', price:'Solo $4.99 USD — pago único',
+      },
+      couple: {
+        badge:'Para ti · En relación',
+        title:'¿Qué tan compatibles son?',
+        desc:'Cada tipo de personalidad ama diferente. Descubre cómo funciona la dinámica entre tú y tu pareja — y cómo hacerla más fuerte.',
+        feats:['Test de compatibilidad para parejas','Cómo se comunica tu tipo vs el suyo','Puntos de conflicto y cómo resolverlos','Lo que tu pareja necesita de ti'],
+        btn:'Analizar nuestra compatibilidad', price:'Solo $4.99 USD — pago único',
+      },
+      healing: {
+        badge:'Para ti · Sanando',
+        title:'Entenderte es el primer paso',
+        desc:'Lo que viviste tiene más sentido de lo que crees. Tu tipo de personalidad explica cómo amas, cómo sufres y cómo te recuperas.',
+        feats:['Por qué esa relación fue como fue','Tus patrones emocionales según tu tipo','Cómo sanar sin repetir lo mismo','Tu próximo capítulo según tu personalidad'],
+        btn:'Quiero entender qué pasó', price:'Solo $4.99 USD — pago único',
+      },
+    },
+
+    // ─── IMPROVED AI PROMPT (ES) ───────────────────────────────────────────────
+    systemPrompt: `Eres un psicólogo clínico especializado en tipología de personalidad MBTI con 15 años de experiencia. 
+Tu tarea es escribir análisis de personalidad que se sientan como una conversación honesta con un terapeuta —
+no como un horóscopo ni un artículo de revista. 
+Reglas absolutas:
+- Habla siempre de "tú", nunca de "las personas INFJ" o "este tipo"
+- Cero frases de manual: nada de "eres empático por naturaleza", "te preocupas por los demás", etc.
+- Cada párrafo debe comenzar con una frase de impacto que nadie esperaría leer
+- Sé específico, contraintuitivo y honesto — especialmente en el punto ciego
+- Máximo 230 palabras en total`,
+
+    aiPrompt: (type, name, ax, seg) => {
+      const domE = ax.E >= 50, domS = ax.S >= 50, domT = ax.T >= 50, domJ = ax.J >= 50;
+      const intensity = (pct) => pct >= 75 ? 'muy marcado' : pct >= 60 ? 'claro' : 'ligero';
+      const segCtx = {
+        solo: 'está soltero/a y cómodo/a con esa independencia',
+        search: 'está soltero/a y activamente buscando una conexión romántica',
+        couple: 'está en una relación de pareja',
+        healing: 'acaba de salir de una relación y está en proceso de recuperación'
+      }[seg];
+
+      return `Tipo MBTI: ${type} (${name})
+
+Puntuaciones exactas:
+- ${domE ? 'Extroversión' : 'Introversión'} ${domE ? ax.E : 100-ax.E}% (tendencia ${intensity(domE ? ax.E : 100-ax.E)})
+- ${domS ? 'Sensación' : 'Intuición'} ${domS ? ax.S : 100-ax.S}% (tendencia ${intensity(domS ? ax.S : 100-ax.S)})
+- ${domT ? 'Pensamiento' : 'Sentimiento'} ${domT ? ax.T : 100-ax.T}% (tendencia ${intensity(domT ? ax.T : 100-ax.T)})
+- ${domJ ? 'Juicio' : 'Percepción'} ${domJ ? ax.J : 100-ax.J}% (tendencia ${intensity(domJ ? ax.J : 100-ax.J)})
+- Situación sentimental: ${segCtx}
+
+Escribe el análisis en 4 párrafos separados por salto de línea:
+[P1] Quién es esta persona en realidad — su esencia más auténtica, lo que la hace diferente incluso dentro de su propio tipo
+[P2] Su superpoder más concreto en la vida cotidiana (trabajo, relaciones, decisiones) — con un ejemplo real de cómo se manifiesta
+[P3] Su punto ciego más honesto — el patrón que sabotea su vida sin que se dé cuenta, relacionado con su situación sentimental actual
+[P4] Un consejo específico y accionable para la próxima semana, no para "su vida en general"`;
+    },
+
+    questions: [
+      { dim:'EI', pole:'E', cat:'Tu energía',
+        text:'Llegas a casa después de un día agotador. ¿Qué necesitas primero?',
+        opts:[{e:'🎉',t:'Llamar a alguien o salir — el contacto me recarga'},{e:'🛋️',t:'Estar solo/a en silencio — necesito espacio para respirar'}]},
+      { dim:'SN', pole:'N', cat:'Tu mente',
+        text:'Cuando escuchas una idea nueva, ¿qué pasa primero en tu cabeza?',
+        opts:[{e:'💡',t:'Veo posibilidades y conexiones con otras ideas'},{e:'📋',t:'Busco si es práctico y cómo aplicarlo en la realidad'}]},
+      { dim:'TF', pole:'T', cat:'Tus decisiones',
+        text:'Un amigo te pide tu opinión honesta sobre algo que hizo mal. ¿Cómo reaccionas?',
+        opts:[{e:'🎯',t:'Le digo la verdad directamente — es lo que necesita'},{e:'🤝',t:'Busco la forma de decirlo sin herirlo — los sentimientos importan'}]},
+      { dim:'JP', pole:'J', cat:'Tu estilo',
+        text:'Tienes un viaje en dos semanas. ¿Cómo lo vives?',
+        opts:[{e:'🗺️',t:'Ya tengo todo planeado — eso me da tranquilidad'},{e:'🌊',t:'Voy viendo — la espontaneidad es parte del plan'}]},
+      { dim:'EI', pole:'I', cat:'Tu energía',
+        text:'En una reunión con gente nueva, ¿qué te describe más?',
+        opts:[{e:'👀',t:'Observo y espero el momento correcto para hablar'},{e:'🗣️',t:'Me lanzo a la conversación — conocer gente me energiza'}]},
+      { dim:'SN', pole:'S', cat:'Tu mente',
+        text:'Alguien te explica un proyecto. ¿Qué quieres saber primero?',
+        opts:[{e:'🔩',t:'Los detalles concretos y los pasos a seguir'},{e:'🚀',t:'La visión grande y hacia dónde va todo'}]},
+      { dim:'TF', pole:'F', cat:'Tus decisiones',
+        text:'Tienes que elegir entre algo que te conviene a ti o algo que beneficia a alguien que quieres. ¿Qué pesa más?',
+        opts:[{e:'💪',t:'Lo que me conviene a mí — no puedo dar lo que no tengo'},{e:'❤️',t:'Lo que necesita la otra persona — eso es lo que importa'}]},
+      { dim:'JP', pole:'P', cat:'Tu estilo',
+        text:'Es lunes y no tienes nada planeado para la semana. ¿Cómo te sientes?',
+        opts:[{e:'😬',t:'Incómodo/a — necesito saber qué viene'},{e:'😌',t:'Liberado/a — puedo adaptarme a lo que surja'}]},
+      { dim:'EI', pole:'E', cat:'Tu energía',
+        text:'¿Cómo procesas mejor un problema difícil?',
+        opts:[{e:'💬',t:'Hablándolo con alguien — vocalizar me ayuda a pensar'},{e:'🧠',t:'Solo/a, en silencio — necesito espacio para ordenar mis ideas'}]},
+      { dim:'SN', pole:'N', cat:'Tu mente',
+        text:'¿Con cuál de estas frases te identificas más?',
+        opts:[{e:'🌱',t:'"Lo que importa es lo que funciona hoy"'},{e:'🌌',t:'"Lo que importa es lo que podría ser mañana"'}]},
+      { dim:'TF', pole:'T', cat:'Tus decisiones',
+        text:'Tomas una decisión difícil y alguien queda molesto. ¿Cómo te sientes después?',
+        opts:[{e:'🧘',t:'Tranquilo/a si la decisión era la correcta — no puedo controlar las reacciones'},{e:'😔',t:'Me afecta — necesito saber que la otra persona está bien'}]},
+    ],
+  },
+
+  en: {
+    logo:'TypeMe ✦',
+    h1a:'Do you know why',
+    h1b:'you are the way you are?',
+    sub:'Discover your personality type in 3 minutes. AI-powered analysis.',
+    statsQ:'Questions', statsD:'Dimensions', statsT:'Types',
+    startBtn:'Find out now',
+    progLabel:'Question', of:'of',
+    back:'← Back', next:'Next →', finish:'See my result ✦',
+    loadTitle:'Analyzing your profile…',
+    loadSub:'AI is preparing your personal analysis',
+    analysisLabel:'Your analysis',
+    shareLabel:'Share result',
+    shareCopy:'📋 Copy', shareTT:'🎵 TikTok',
+    restart:'↺ Retake the test',
+    segTitle:'One personal question',
+    segSub:'This makes your result more accurate',
+    segQ:'How would you describe your relationship status right now?',
+    segOpts:[
+      { emoji:'😎', text:'Single and loving it', val:'solo' },
+      { emoji:'🔍', text:'Single and looking for someone', val:'search' },
+      { emoji:'💑', text:'In a relationship', val:'couple' },
+      { emoji:'💔', text:'Coming out of a relationship', val:'healing' },
+    ],
+    premium: {
+      solo: {
+        badge:'For you · Independent',
+        title:'Your self-knowledge guide',
+        desc:'You are your own priority. This report helps you understand yourself deeper and attract the right people when you\'re ready.',
+        feats:['Complete personality map','Your patterns in past relationships','What type truly complements you','Routines that boost your type'],
+        btn:'I want to know myself better', price:'Only $4.99 USD — one-time payment',
+      },
+      search: {
+        badge:'For you · Looking for connection',
+        title:'Why do you attract certain people?',
+        desc:'Your personality type predicts the patterns you repeat in love. Find out what type of person truly complements you.',
+        feats:['The 3 most compatible types for you','Why you\'re drawn to difficult people','How to communicate to connect more','Red flags based on your type'],
+        btn:'Discover my compatibility', price:'Only $4.99 USD — one-time payment',
+      },
+      couple: {
+        badge:'For you · In a relationship',
+        title:'How compatible are you really?',
+        desc:'Every personality type loves differently. Discover how your dynamic works — and how to make it stronger.',
+        feats:['Compatibility test for couples','How your type communicates vs theirs','Conflict points and how to resolve them','What your partner needs from you'],
+        btn:'Analyze our compatibility', price:'Only $4.99 USD — one-time payment',
+      },
+      healing: {
+        badge:'For you · Healing',
+        title:'Understanding yourself is the first step',
+        desc:'What you went through makes more sense than you think. Your personality type explains how you love, how you hurt, and how you recover.',
+        feats:['Why that relationship was the way it was','Your emotional patterns by type','How to heal without repeating patterns','Your next chapter by personality'],
+        btn:'I want to understand what happened', price:'Only $4.99 USD — one-time payment',
+      },
+    },
+
+    // ─── IMPROVED AI PROMPT (EN) ───────────────────────────────────────────────
+    systemPrompt: `You are a clinical psychologist specialized in MBTI personality typology with 15 years of experience.
+Your task is to write personality analyses that feel like an honest conversation with a therapist —
+not like a horoscope or a magazine article.
+Absolute rules:
+- Always speak in "you", never "INFJs tend to..." or "this type..."
+- Zero textbook phrases: no "you're naturally empathetic", "you care about others", etc.
+- Each paragraph must open with an impactful sentence the person wouldn't expect to read
+- Be specific, counterintuitive, and honest — especially about the blind spot
+- Maximum 230 words total`,
+
+    aiPrompt: (type, name, ax, seg) => {
+      const domE = ax.E >= 50, domS = ax.S >= 50, domT = ax.T >= 50, domJ = ax.J >= 50;
+      const intensity = (pct) => pct >= 75 ? 'very strong' : pct >= 60 ? 'clear' : 'mild';
+      const segCtx = {
+        solo: 'is single and comfortable with that independence',
+        search: 'is single and actively looking for a romantic connection',
+        couple: 'is currently in a relationship',
+        healing: 'just came out of a relationship and is in recovery'
+      }[seg];
+
+      return `MBTI Type: ${type} (${name})
+
+Exact scores:
+- ${domE ? 'Extraversion' : 'Introversion'} ${domE ? ax.E : 100-ax.E}% (${intensity(domE ? ax.E : 100-ax.E)} tendency)
+- ${domS ? 'Sensing' : 'Intuition'} ${domS ? ax.S : 100-ax.S}% (${intensity(domS ? ax.S : 100-ax.S)} tendency)
+- ${domT ? 'Thinking' : 'Feeling'} ${domT ? ax.T : 100-ax.T}% (${intensity(domT ? ax.T : 100-ax.T)} tendency)
+- ${domJ ? 'Judging' : 'Perceiving'} ${domJ ? ax.J : 100-ax.J}% (${intensity(domJ ? ax.J : 100-ax.J)} tendency)
+- Relationship status: this person ${segCtx}
+
+Write the analysis in 4 paragraphs separated by a blank line:
+[P1] Who this person really is — their most authentic essence, what makes them different even within their own type
+[P2] Their most concrete superpower in daily life (work, relationships, decisions) — with a real example of how it shows up
+[P3] Their most honest blind spot — the pattern that quietly sabotages their life, tied to their current relationship situation
+[P4] One specific, actionable piece of advice for this week — not for "life in general"`;
+    },
+
+    questions: [
+      { dim:'EI', pole:'E', cat:'Your energy',
+        text:'You get home after an exhausting day. What do you need first?',
+        opts:[{e:'🎉',t:'Call someone or go out — contact recharges me'},{e:'🛋️',t:'Be alone in silence — I need space to breathe'}]},
+      { dim:'SN', pole:'N', cat:'Your mind',
+        text:'When you hear a new idea, what happens first in your head?',
+        opts:[{e:'💡',t:'I see possibilities and connections to other ideas'},{e:'📋',t:'I look for whether it\'s practical and how to apply it'}]},
+      { dim:'TF', pole:'T', cat:'Your decisions',
+        text:'A friend asks your honest opinion about something they did wrong. How do you react?',
+        opts:[{e:'🎯',t:'I tell them the truth directly — that\'s what they need'},{e:'🤝',t:'I find a way to say it without hurting them — feelings matter'}]},
+      { dim:'JP', pole:'J', cat:'Your style',
+        text:'You have a trip in two weeks. How do you experience it?',
+        opts:[{e:'🗺️',t:'Everything is already planned — that gives me peace of mind'},{e:'🌊',t:'I\'ll figure it out — spontaneity is part of the plan'}]},
+      { dim:'EI', pole:'I', cat:'Your energy',
+        text:'In a meeting with new people, what describes you most?',
+        opts:[{e:'👀',t:'I observe and wait for the right moment to speak'},{e:'🗣️',t:'I jump into conversation — meeting people energizes me'}]},
+      { dim:'SN', pole:'S', cat:'Your mind',
+        text:'Someone explains a project to you. What do you want to know first?',
+        opts:[{e:'🔩',t:'The concrete details and the steps to follow'},{e:'🚀',t:'The big vision and where everything is headed'}]},
+      { dim:'TF', pole:'F', cat:'Your decisions',
+        text:'You have to choose between what benefits you or what helps someone you love. What weighs more?',
+        opts:[{e:'💪',t:'What\'s good for me — I can\'t give what I don\'t have'},{e:'❤️',t:'What the other person needs — that\'s what matters'}]},
+      { dim:'JP', pole:'P', cat:'Your style',
+        text:'It\'s Monday and you have nothing planned for the week. How do you feel?',
+        opts:[{e:'😬',t:'Uncomfortable — I need to know what\'s coming'},{e:'😌',t:'Free — I can adapt to whatever comes up'}]},
+      { dim:'EI', pole:'E', cat:'Your energy',
+        text:'How do you best process a difficult problem?',
+        opts:[{e:'💬',t:'Talking it through with someone — verbalizing helps me think'},{e:'🧠',t:'Alone, in silence — I need space to sort my thoughts'}]},
+      { dim:'SN', pole:'N', cat:'Your mind',
+        text:'Which phrase resonates with you more?',
+        opts:[{e:'🌱',t:'"What matters is what works today"'},{e:'🌌',t:'"What matters is what could be tomorrow"'}]},
+      { dim:'TF', pole:'T', cat:'Your decisions',
+        text:'You make a tough decision and someone ends up upset. How do you feel afterward?',
+        opts:[{e:'🧘',t:'At peace if the decision was right — I can\'t control reactions'},{e:'😔',t:'It affects me — I need to know the other person is okay'}]},
+    ],
+  }
+};
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let lang = 'es';
+let phase = 'intro';
+let current = 0;
+let answers = {};
+let segAnswer = null;
+let resultType = null;
+let axisScores = {};
+let aiAnalysis = '';
+
+const SEG_AFTER = 5;
+const TOTAL_Q = 11;
+
+function setLang(l) {
+  lang = l;
+  document.getElementById('btn-es').classList.toggle('active', l==='es');
+  document.getElementById('btn-en').classList.toggle('active', l==='en');
+  render();
+}
+
+const root = () => document.getElementById('root');
+
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function render() {
+  if      (phase==='intro')   renderIntro();
+  else if (phase==='quiz')    renderQuiz();
+  else if (phase==='seg')     renderSeg();
+  else if (phase==='loading') renderLoading();
+  else if (phase==='result')  renderResult();
+}
+
+// ─── INTRO ────────────────────────────────────────────────────────────────────
+function renderIntro() {
+  const l = T[lang];
+  root().innerHTML = `
+    <div style="text-align:center;padding:36px 0 40px;animation:fadeUp .6s ease both">
+      <div class="logo-mark">${l.logo}</div>
+      <h1>${l.h1a}<br><span class="grad-text">${l.h1b}</span></h1>
+      <p class="hero-sub">${l.sub}</p>
+      <div class="hero-stats">
+        <div class="stat"><div class="stat-n">11</div><div class="stat-l">${l.statsQ}</div></div>
+        <div class="stat"><div class="stat-n">4</div><div class="stat-l">${l.statsD}</div></div>
+        <div class="stat"><div class="stat-n">16</div><div class="stat-l">${l.statsT}</div></div>
+      </div>
+      <button class="cta-btn" onclick="startQuiz()">${l.startBtn} <span class="cta-arrow">→</span></button>
+    </div>
+    <div class="type-grid">
+      ${Object.entries(TYPES).map(([code,info])=>`
+        <div class="type-chip">
+          <div class="type-chip-code">${code}</div>
+          <div class="type-chip-name">${lang==='es'?info.name_es:info.name_en}</div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function startQuiz() {
+  phase='quiz'; current=0; answers={}; segAnswer=null;
+  render();
+  scrollToTop();
+}
+
+// ─── QUIZ ─────────────────────────────────────────────────────────────────────
+function visualStep() {
+  if (current <= SEG_AFTER) return current;
+  return current + 1;
+}
+function totalVisualSteps() { return TOTAL_Q + 1; }
+
+function renderQuiz() {
+  const l = T[lang];
+  const qs = l.questions;
+  const q = qs[current];
+  const vstep = visualStep();
+  const vtotal = totalVisualSteps();
+  const pct = Math.round((vstep / vtotal) * 100);
+  const sel = answers[current];
+
+  root().innerHTML = `
+    <div class="progress-wrap">
+      <div class="progress-top">
+        <span class="prog-label">${l.progLabel} ${vstep+1} ${l.of} ${vtotal}</span>
+        <span class="prog-pct">${pct}%</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+    </div>
+    <div class="q-card">
+      <div class="q-cat">✦ ${q.cat}</div>
+      <div class="q-text">${q.text}</div>
+      <div class="choices">
+        ${q.opts.map((o,i)=>`
+          <button class="choice ${sel===i?'selected':''}" onclick="selectAnswer(${i})">
+            <span class="choice-emoji">${o.e}</span>
+            <span>${o.t}</span>
+            <span class="choice-check">${sel===i?'✓':''}</span>
+          </button>`).join('')}
+      </div>
+      <div class="q-nav">
+        ${vstep > 0 ? `<button class="btn-back" onclick="goBack()">${l.back}</button>` : ''}
+        <button class="btn-next" onclick="goNext()" ${sel===undefined?'disabled':''}>
+          ${current === TOTAL_Q - 1 ? l.finish : l.next}
+        </button>
+      </div>
+    </div>`;
+}
+
+function selectAnswer(val) {
+  answers[current] = val;
+  render();
+}
+
+function goBack() {
+  if (phase === 'quiz') {
+    if (current === 0) return;
+    if (current === SEG_AFTER + 1) { phase = 'seg'; render(); scrollToTop(); return; }
+    current--;
+    render();
+    scrollToTop();
+  } else if (phase === 'seg') {
+    phase = 'quiz';
+    current = SEG_AFTER;
+    render();
+    scrollToTop();
+  }
+}
+
+function goNext() {
+  if (answers[current] === undefined) return;
+  if (current === SEG_AFTER) {
+    phase = 'seg';
+    render();
+    scrollToTop();
+    return;
+  }
+  if (current < TOTAL_Q - 1) {
+    current++;
+    render();
+    scrollToTop();
+  } else {
+    calculate();
+  }
+}
+
+// ─── SEGMENTATION ─────────────────────────────────────────────────────────────
+function renderSeg() {
+  const l = T[lang];
+  const vstep = SEG_AFTER + 1;
+  const vtotal = totalVisualSteps();
+  const pct = Math.round((vstep / vtotal) * 100);
+
+  root().innerHTML = `
+    <div class="progress-wrap">
+      <div class="progress-top">
+        <span class="prog-label">${l.progLabel} ${vstep+1} ${l.of} ${vtotal}</span>
+        <span class="prog-pct">${pct}%</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+    </div>
+    <div class="seg-card">
+      <div class="q-cat" style="background:rgba(255,184,0,0.1);border-color:rgba(255,184,0,0.2);color:#fcd34d;">✦ ${l.segTitle}</div>
+      <div class="q-text">${l.segQ}</div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:20px;margin-top:-16px;font-family:'Syne Mono',monospace;">${l.segSub}</p>
+      <div class="choices">
+        ${l.segOpts.map(o=>`
+          <button class="choice ${segAnswer===o.val?'selected':''}" onclick="selectSeg('${o.val}')">
+            <span class="choice-emoji">${o.emoji}</span>
+            <span>${o.text}</span>
+            <span class="choice-check">${segAnswer===o.val?'✓':''}</span>
+          </button>`).join('')}
+      </div>
+      <div class="q-nav">
+        <button class="btn-back" onclick="goBack()">${l.back}</button>
+        <button class="btn-next" onclick="afterSeg()" ${!segAnswer?'disabled':''}>${l.next}</button>
+      </div>
+    </div>`;
+}
+
+function selectSeg(val) { segAnswer = val; render(); }
+
+function afterSeg() {
+  if (!segAnswer) return;
+  phase = 'quiz';
+  current = SEG_AFTER + 1;
+  render();
+  scrollToTop();
+}
+
+// ─── CALCULATE ────────────────────────────────────────────────────────────────
+function calculate() {
+  const qs = T[lang].questions;
+  const scores = {E:0,I:0,S:0,N:0,T:0,F:0,J:0,P:0};
+
+  qs.forEach((q, idx) => {
+    const raw = answers[idx];
+    if (raw === undefined) return;
+    const agree = raw === 0 ? 1 : -1;
+    const apply = (pos, neg) => { if (agree > 0) scores[pos]++; else scores[neg]++; };
+    if (q.pole==='E') apply('E','I');
+    if (q.pole==='I') apply('I','E');
+    if (q.pole==='S') apply('S','N');
+    if (q.pole==='N') apply('N','S');
+    if (q.pole==='T') apply('T','F');
+    if (q.pole==='F') apply('F','T');
+    if (q.pole==='J') apply('J','P');
+    if (q.pole==='P') apply('P','J');
+  });
+
+  const s = v => v + 0.01;
+  resultType = (scores.E>=scores.I?'E':'I')+(scores.S>=scores.N?'S':'N')+(scores.T>=scores.F?'T':'F')+(scores.J>=scores.P?'J':'P');
+  axisScores = {
+    E: Math.round(scores.E/(s(scores.E)+s(scores.I))*100),
+    S: Math.round(scores.S/(s(scores.S)+s(scores.N))*100),
+    T: Math.round(scores.T/(s(scores.T)+s(scores.F))*100),
+    J: Math.round(scores.J/(s(scores.J)+s(scores.P))*100),
+  };
+
+  phase = 'loading';
+  render();
+  scrollToTop();
+  fetchAnalysis();
+}
+
+// ─── LOADING ──────────────────────────────────────────────────────────────────
+function renderLoading() {
+  const l = T[lang];
+  root().innerHTML = `
+    <div class="loading-screen">
+      <div class="loading-orb"></div>
+      <div class="loading-title">${l.loadTitle}</div>
+      <div class="loading-sub">${l.loadSub}</div>
+    </div>`;
+}
+
+async function fetchAnalysis() {
+  const info = TYPES[resultType];
+  const name = lang==='es' ? info.name_es : info.name_en;
+  const l = T[lang];
+  const prompt = l.aiPrompt(resultType, name, axisScores, segAnswer || 'solo');
+
+  try {
+    const res = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: l.systemPrompt,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    aiAnalysis = data.content?.[0]?.text || '—';
+  } catch(e) {
+    aiAnalysis = lang==='es'
+      ? 'No se pudo cargar el análisis. Intenta de nuevo.'
+      : 'Could not load analysis. Please try again.';
+  }
+
+  phase = 'result';
+  render();
+  scrollToTop();
+  setTimeout(() => {
+    document.querySelectorAll('.axis-fill').forEach(el => {
+      el.style.width = el.dataset.target;
+    });
+  }, 150);
+}
+
+// ─── RESULT ───────────────────────────────────────────────────────────────────
+function renderResult() {
+  const l = T[lang];
+  const info = TYPES[resultType];
+  const name = lang==='es' ? info.name_es : info.name_en;
+  const phrase = lang==='es' ? info.phrase_es : info.phrase_en;
+  const ax = axisScores;
+  const seg = segAnswer || 'solo';
+  const prem = l.premium[seg];
+
+  const axes = [
+    {dim:'EI',lL:lang==='es'?'Extroversión':'Extraversion',lR:lang==='es'?'Introversión':'Introversion',pct:ax.E},
+    {dim:'SN',lL:lang==='es'?'Sensación':'Sensing',        lR:lang==='es'?'Intuición':'Intuition',      pct:ax.S},
+    {dim:'TF',lL:lang==='es'?'Pensamiento':'Thinking',     lR:lang==='es'?'Sentimiento':'Feeling',      pct:ax.T},
+    {dim:'JP',lL:lang==='es'?'Juicio':'Judging',           lR:lang==='es'?'Percepción':'Perceiving',    pct:ax.J},
+  ];
+
+  const paras = aiAnalysis.split('\n').filter(p => p.trim());
+  const shareText = lang==='es'
+    ? `Soy ${resultType} — ${name} 🧠\n"${phrase}"\nDescubre el tuyo en typeme.app`
+    : `I'm ${resultType} — ${name} 🧠\n"${phrase}"\nDiscover yours at typeme.app`;
+
+  root().innerHTML = `
+    <div class="result-screen">
+      <div class="result-hero">
+        <div class="result-glow"></div>
+        <div class="result-type">${resultType}</div>
+        <div class="result-name">${name}</div>
+        <div class="result-phrase">"${phrase}"</div>
+      </div>
+
+      <div class="axes">
+        ${axes.map(a=>`
+          <div class="axis-card">
+            <div class="axis-top">
+              <span class="axis-p ${a.pct>=50?'on':'off'}">${a.lL.slice(0,3).toUpperCase()} ${a.pct}%</span>
+              <span class="axis-p ${a.pct<50?'on':'off'}">${a.lR.slice(0,3).toUpperCase()} ${100-a.pct}%</span>
+            </div>
+            <div class="axis-track">
+              <div class="axis-fill" style="width:0%;background:${AXIS_GRAD[a.dim]}" data-target="${a.pct}%"></div>
+            </div>
+          </div>`).join('')}
+      </div>
+
+      <div class="analysis-card">
+        <div class="section-label">${l.analysisLabel}</div>
+        <div class="analysis-text">${paras.map(p=>`<p>${p}</p>`).join('')}</div>
+      </div>
+
+      <div class="premium-card ${seg}">
+        <div class="premium-badge">✦ ${prem.badge}</div>
+        <div class="premium-title">${prem.title}</div>
+        <div class="premium-desc">${prem.desc}</div>
+        <div class="premium-feats">
+          ${prem.feats.map(f=>`<div class="premium-feat"><div class="feat-icon">✓</div>${f}</div>`).join('')}
+        </div>
+        <button class="premium-btn" onclick="premiumClick()">${prem.btn}</button>
+        <div class="premium-price">${prem.price}</div>
+      </div>
+
+      <div class="share-row">
+        <button class="share-btn" onclick="copyShare(\`${shareText.replace(/`/g,"'")}\`)">${l.shareCopy}</button>
+        <button class="share-btn" onclick="tiktokShare()">${l.shareTT}</button>
+      </div>
+      <button class="restart-btn" onclick="restartTest()">${l.restart}</button>
+    </div>`;
+}
+
+function premiumClick() {
+  alert(lang==='es'
+    ? '💳 Conecta tu pasarela de pago aquí (Stripe, Gumroad, PayPal).'
+    : '💳 Connect your payment gateway here (Stripe, Gumroad, PayPal).');
+}
+
+function copyShare(text) {
+  navigator.clipboard.writeText(text)
+    .then(()=> alert(lang==='es' ? '¡Copiado! Pégalo donde quieras 🎉' : 'Copied! Paste it anywhere 🎉'))
+    .catch(()=> prompt('Copy:', text));
+}
+
+function tiktokShare() {
+  alert(lang==='es'
+    ? '🎵 Agrega aquí el link a tu perfil de TikTok o enlace de tu bio'
+    : '🎵 Add your TikTok profile link or bio link here');
+}
+
+function restartTest() {
+  phase='intro'; current=0; answers={}; segAnswer=null; resultType=null; aiAnalysis='';
+  render();
+  scrollToTop();
+}
+
+render();
+</script>
+</body>
+</html>
